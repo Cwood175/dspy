@@ -275,6 +275,7 @@ def test_chat_adapter_formats_image_with_nested_images():
     expected_image2_content = {"type": "image_url", "image_url": {"url": "https://example.com/image2.jpg"}}
     expected_image3_content = {"type": "image_url", "image_url": {"url": "https://example.com/image3.jpg"}}
 
+    # The query image wrapper contains all three images in the first user message
     assert expected_image1_content in messages[1]["content"]
     assert expected_image2_content in messages[1]["content"]
     assert expected_image3_content in messages[1]["content"]
