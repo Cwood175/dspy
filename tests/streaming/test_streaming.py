@@ -326,6 +326,8 @@ def test_sync_status_streaming():
     assert len(status_messages) == 2
     assert status_messages[0].message == "Calling tool generate_question..."
     assert status_messages[1].message == "Tool calling finished! Querying the LLM with tool calling results..."
+    all_chunks = [chunk for chunk in sync_output if isinstance(chunk, dspy.streaming.StreamResponse)]
+    assert all_chunks[-1].is_last_chunk is True
 
 
 @pytest.mark.anyio
@@ -754,6 +756,7 @@ async def test_stream_listener_allow_reuse():
         yield ModelResponseStream(model="gpt-4o-mini", choices=[StreamingChoices(delta=Delta(content=" completed"))])
         yield ModelResponseStream(model="gpt-4o-mini", choices=[StreamingChoices(delta=Delta(content=" ##"))])
         yield ModelResponseStream(model="gpt-4o-mini", choices=[StreamingChoices(delta=Delta(content=" ]]"))])
+        yield ModelResponseStream(model="gpt-4o-mini", choices=[StreamingChoices(delta=Delta(content="\n\n"))])
 
     stream_generators = [gpt_4o_mini_stream, gpt_4o_mini_stream]
 
@@ -771,6 +774,7 @@ async def test_stream_listener_allow_reuse():
     concat_message = "".join([chunk.chunk for chunk in all_chunks])
     # The listener functions twice.
     assert concat_message == "To get to the other side!To get to the other side!"
+    assert all_chunks[-1].is_last_chunk is True
 
 
 @pytest.mark.anyio
@@ -819,6 +823,7 @@ async def test_stream_listener_returns_correct_chunk_xml_adapter():
         yield ModelResponseStream(model="gpt-4o-mini", choices=[StreamingChoices(delta=Delta(content="<"))])
         yield ModelResponseStream(model="gpt-4o-mini", choices=[StreamingChoices(delta=Delta(content="completed"))])
         yield ModelResponseStream(model="gpt-4o-mini", choices=[StreamingChoices(delta=Delta(content=">"))])
+        yield ModelResponseStream(model="gpt-4o-mini", choices=[StreamingChoices(delta=Delta(content="\n\n"))])
 
     stream_generators = [xml_stream_1, xml_stream_2]
 
@@ -847,6 +852,7 @@ async def test_stream_listener_returns_correct_chunk_xml_adapter():
     assert all_chunks[1].predict_name == "predict2"
     assert all_chunks[1].signature_field_name == "judgement"
     assert all_chunks[1].chunk == "The answer is humorous."
+    assert all_chunks[-1].is_last_chunk is True
 
 
 @pytest.mark.anyio

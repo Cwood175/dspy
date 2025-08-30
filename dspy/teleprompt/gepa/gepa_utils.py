@@ -3,7 +3,6 @@ import random
 from typing import Any, Callable, Protocol
 
 from gepa import EvaluationBatch, GEPAAdapter
-
 from dspy.adapters.chat_adapter import ChatAdapter
 from dspy.adapters.types import History
 from dspy.evaluate import Evaluate

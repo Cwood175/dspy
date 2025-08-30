@@ -281,7 +281,7 @@ class GEPA(Teleprompter):
         wandb_init_kwargs: dict[str, Any] | None = None,
         track_best_outputs: bool = False,
         # Reproducibility
-        seed: int | None = 0,
+        seed: int | None = None,
         keep_module_scores: bool = False,
     ):
         try:
