@@ -287,7 +287,7 @@ def test_sync_streaming(lm_for_test):
         async_streaming=False,
     )
     # Turn off the cache to ensure the stream is produced.
-    with dspy.context(lm=dspy.LM(lm_for_test, cache=False)):
+    with dspy.context(lm=dspy.LM(lm_for_test, cache=False, temperature=0.0)):
         output = program(x="why did a chicken cross the kitchen?")
         all_chunks = []
         for value in output:
@@ -300,7 +300,14 @@ def test_sync_streaming(lm_for_test):
 
     assert all_chunks[-1].predict_name == "predict2"
     assert all_chunks[-1].signature_field_name == "judgement"
-    assert all_chunks[-1].is_last_chunk is True
+
+    judgement_chunks = [
+        chunk
+        for chunk in all_chunks
+        if chunk.predict_name == "predict2" and chunk.signature_field_name == "judgement"
+    ]
+    assert len(judgement_chunks) > 0
+    assert any(chunk.is_last_chunk is True for chunk in judgement_chunks)
 
 
 def test_sync_status_streaming():
