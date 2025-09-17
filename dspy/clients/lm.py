@@ -5,11 +5,10 @@ import threading
 import warnings
 from typing import Any, Literal, cast
 
-import litellm
-from anyio.streams.memory import MemoryObjectSendStream
-from asyncer import syncify
-
 import dspy
+from anyio.streams.memory import MemoryObjectSendStream
+import litellm
+from asyncer import syncify
 from dspy.clients.cache import request_cache
 from dspy.clients.openai import OpenAIProvider
 from dspy.clients.provider import Provider, ReinforceJob, TrainingJob
