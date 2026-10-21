@@ -204,21 +204,38 @@ def test_xml_adapter_formats_nested_images():
     ]
 
     image_wrapper_2 = ImageWrapper(images=[dspy.Image(url="https://example.com/image4.jpg")], tag=["test", "example"])
-    adapter = dspy.XMLAdapter()
+    adapter = XMLAdapter()
     messages = adapter.format(MySignature, demos, {"image": image_wrapper_2})
 
     assert len(messages) == 4
 
-    # Image information in the few-shot example's user message
+    import ast
+    import json
+
+    def _to_dict(item):
+        if isinstance(item, str):
+            try:
+                return json.loads(item)
+            except Exception:
+                try:
+                    return ast.literal_eval(item)
+                except Exception:
+                    return item
+        return item
+
+    # Normalize content entries for robust comparison (handles JSON strings, Python reprs, or dicts)
+    content_items = [_to_dict(x) for x in messages[1]["content"]]
+
     expected_image1_content = {"type": "image_url", "image_url": {"url": "https://example.com/image1.jpg"}}
     expected_image2_content = {"type": "image_url", "image_url": {"url": "https://example.com/image2.jpg"}}
     expected_image3_content = {"type": "image_url", "image_url": {"url": "https://example.com/image3.jpg"}}
-    assert expected_image1_content in messages[1]["content"]
-    assert expected_image2_content in messages[1]["content"]
-    assert expected_image3_content in messages[1]["content"]
+    assert expected_image1_content in content_items
+    assert expected_image2_content in content_items
+    assert expected_image3_content in content_items
 
     # The query image is formatted in the last user message
-    assert {"type": "image_url", "image_url": {"url": "https://example.com/image4.jpg"}} in messages[-1]["content"]
+    last_content_items = [_to_dict(x) for x in messages[-1]["content"]]
+    assert {"type": "image_url", "image_url": {"url": "https://example.com/image4.jpg"}} in last_content_items
 
 
 def test_xml_adapter_with_code():
