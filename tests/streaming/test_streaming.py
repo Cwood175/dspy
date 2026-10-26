@@ -273,7 +273,7 @@ def test_sync_streaming(lm_for_test):
             self.predict2 = dspy.Predict("question, answer->judgement")
 
         def __call__(self, x: str, **kwargs):
-            answer = self.predict1(question=x, **kwargs)
+            answer = self.predict1(question=x, **kwargs).answer
             judgement = self.predict2(question=x, answer=answer, **kwargs)
             return judgement
 
@@ -881,6 +881,7 @@ async def test_streaming_allows_custom_chunk_types():
 async def test_streaming_with_citations():
     class AnswerWithSources(dspy.Signature):
         """Answer questions using provided documents with citations."""
+
         documents: list[Document] = dspy.InputField()
         question: str = dspy.InputField()
         answer: str = dspy.OutputField()
@@ -905,20 +906,36 @@ async def test_streaming_with_citations():
         yield ModelResponseStream(model="claude", choices=[StreamingChoices(delta=Delta(content=" 100°C"))])
         yield ModelResponseStream(model="claude", choices=[StreamingChoices(delta=Delta(content="."))])
         yield ModelResponseStream(model="claude", choices=[StreamingChoices(delta=Delta(content="\n\n"))])
-        yield ModelResponseStream(model="claude", choices=[StreamingChoices(delta=Delta(content='[{"type": "char_location", "cited_text": "Water boils at 100°C", "document_index": 0, "document_title": "Physics Facts", "start_char_index": 0, "end_char_index": 19}]'))])
-        yield ModelResponseStream(model="claude", choices=[StreamingChoices(delta=Delta(
-            content="",
-            provider_specific_fields={
-                "citation": {
-                    "type": "char_location",
-                    "cited_text": "Water boils at 100°C",
-                    "document_index": 0,
-                    "document_title": "Physics Facts",
-                    "start_char_index": 0,
-                    "end_char_index": 19
-                }
-            }
-        ))])
+        yield ModelResponseStream(
+            model="claude",
+            choices=[
+                StreamingChoices(
+                    delta=Delta(
+                        content='[{"type": "char_location", "cited_text": "Water boils at 100°C", "document_index": 0, "document_title": "Physics Facts", "start_char_index": 0, "end_char_index": 19}]'
+                    )
+                )
+            ],
+        )
+        yield ModelResponseStream(
+            model="claude",
+            choices=[
+                StreamingChoices(
+                    delta=Delta(
+                        content="",
+                        provider_specific_fields={
+                            "citation": {
+                                "type": "char_location",
+                                "cited_text": "Water boils at 100°C",
+                                "document_index": 0,
+                                "document_title": "Physics Facts",
+                                "start_char_index": 0,
+                                "end_char_index": 19,
+                            }
+                        },
+                    )
+                )
+            ],
+        )
         yield ModelResponseStream(model="claude", choices=[StreamingChoices(delta=Delta(content="\n\n"))])
         yield ModelResponseStream(model="claude", choices=[StreamingChoices(delta=Delta(content="[[ ##"))])
         yield ModelResponseStream(model="claude", choices=[StreamingChoices(delta=Delta(content=" completed"))])
