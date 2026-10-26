@@ -139,7 +139,7 @@ async def test_stream_listener_chat_adapter(lm_for_test):
             self.predict2 = dspy.Predict("question, answer->judgement")
 
         def __call__(self, x: str, **kwargs):
-            answer = self.predict1(question=x, **kwargs)
+            answer = self.predict1(question=x, **kwargs).answer
             judgement = self.predict2(question=x, answer=answer, **kwargs)
             return judgement
 
